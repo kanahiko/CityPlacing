@@ -4,14 +4,13 @@ using UnityEngine;
 
 public class GameMaster : MonoBehaviour
 {
+    public static GameMaster instance;
     public QuadTree terrainFeatures;
-    // Start is called before the first frame update
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         
@@ -21,9 +20,11 @@ public class GameMaster : MonoBehaviour
 
 public class QuadTree
 {
-    public Rect boundaries = new Rect(-5, -5, 10, 10);
+    public Rect boundaries = new Rect(0, 0, 10, 10);
     public int capacity;
     public QuadTree[] parts;
+
+    RoadObject block;
 
     public QuadTree(Rect boundaries)
     {
@@ -36,9 +37,42 @@ public class QuadTree
         }*/
     }
 
-    public void Insert(Vector2 position)
-    {
-        capacity++;
+    public void Insert(RoadObject newBlock)
+    {      
+        if (parts == null && block != null)
+        {
+            block = newBlock;
+            block.quad = this;
+        }
+        else
+        {
+            if (parts == null)
+            {
+                Subdivide();
+            }
+            if (block != null)
+            {
+                //reinsert current block
+                for (int i = 0; i < 4; i++)
+                {
+                    if (boundaries.Contains(block.position))
+                    {
+                        parts[i].Insert(block);
+                        break;
+                    }
+                }
+                block = null;
+            }
+            //insert new block
+            for (int i = 0; i < 4; i++)
+            {
+                if (boundaries.Contains(newBlock.position))
+                {
+                    parts[i].Insert(newBlock);
+                    break;
+                }
+            }
+        }
     }
 
     public void Subdivide()
