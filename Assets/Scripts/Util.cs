@@ -1,40 +1,49 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public static class Util
 {
     public static Vector2[] quadOffsetsMultiplier = new Vector2[]
     {
-        new Vector2(-1,1),new Vector2(1,1),new Vector2(1,-1),new Vector2(-1,-1)
+        new Vector2(1,1),new Vector2(1,-1),new Vector2(-1,-1),new Vector2(-1,1)
     };
 
-    public static int[] rotation = new int[]
+    public static int[] rotationAngle = new int[]
     {
-        270,0,90,180
+        0,90,180,270
     };
-
-
-    public static Vector2[] GetSmallCirclePoint(int count, float radius, float quadSize)
+    public static List<Vector3> GetCirclePoint(int count, float radius, float quadSize, int rotation)
     {
-        Vector2[] result = new Vector2[count + 1];
+        //Debug.Log(radius);
+        List<Vector3> result = new List<Vector3>();
 
-        result[0] = new Vector2(radius, halfQuadSize);
-        result[count] = new Vector2(halfQuadSize, radius);
-
+        //result[0] = new Vector3(quadSize - radius, 0, quadSize);
+        //result[count] = new Vector3(quadSize, 0, quadSize - radius);
+        //Debug.Log(quadOffsetsMultiplier[rotation]);
         float angleStep = 90 / count;
 
-        for(int i = 1; i < count; i++)
+        //Debug.Log(result[0]);
+        for (int i = 0; i < count + 1; i++)
         {
-            result[i] = new Vector3(radius * Mathf.Sin(Mathf.Deg2Rad*(angleStep*i)),
-                radius * Mathf.Sin(Mathf.Deg2Rad * (90-(angleStep * i))));
+
+            Vector3 res = Quaternion.AngleAxis(rotationAngle[rotation], Vector3.up) * (new Vector3(-radius * Mathf.Sin(Mathf.Deg2Rad * (90 - angleStep * i)) + quadSize,
+                0,
+                -radius * Mathf.Sin(Mathf.Deg2Rad * ((angleStep * i))) + quadSize));
+            //res.x *= quadOffsetsMultiplier[rotation].x;
+            //res.z *= quadOffsetsMultiplier[rotation].y;
+            result.Add(res);
+           // Debug.Log(result[i]);
         }
+        //Debug.Log(result[count]);
 
         return result;
     }
 }
 
+
 public enum QuadSide
 {
-   TopLeft = 0, TopRight = 1,
-   BottomRight = 2, BottomLeft = 3
+   TopLeft = 3, TopRight = 0,
+   BottomRight = 1, BottomLeft = 2
 }

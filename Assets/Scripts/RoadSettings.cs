@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[CreateAssetMenu(fileName ="roadSettings", menuName ="Road Settings")]
 public class RoadSettings: ScriptableObject
 {
     public int smallCurvePolyCount = 3;
@@ -18,4 +19,15 @@ public class RoadSettings: ScriptableObject
 
     public Color roadColor = Color.black;
     public Color sideWalkColor = Color.gray;
+
+    public float GetInnerRadius()
+    {
+        return 0;
+    }
+
+    public float GetOuterRadius()
+    {
+        return 0;
+
+    }
 }
