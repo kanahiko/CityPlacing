@@ -5,4 +5,6 @@ public class RoadObject: MonoBehaviour
 {
     public QuadTree quad;
     public Vector2 position;
+
+    RoadSection section;
 }

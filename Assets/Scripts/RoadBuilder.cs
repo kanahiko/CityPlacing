@@ -14,21 +14,32 @@ public class RoadBuilder : MonoBehaviour
 
     Dictionary<string, RoadSection> meshSections;
 
+    List<RoadSection> sections;
+
     private void Awake()
     {
         mesh = new Mesh();
         meshFilter.mesh = mesh;
 
         halfQuadSize = quadSize / 2;
+
+        sections = new List<RoadSection>();
     }
 
     public void Start()
     {
         RoadSection road = new RoadSection();
         CreateStraightRoadQuad(Vector3.zero, (int)rotation, ref road);
+        sections.Add(road);
+        road = new RoadSection();
+        CreateStraightRoadQuad(new Vector3(quadSize, 0, 0), (int)rotation, ref road);
+        sections.Add(road);
+        road = new RoadSection();
+        CreateStraightRoadQuad(new Vector3(quadSize * 2, 0, 0), (int)rotation, ref road);
+        sections.Add(road);
         //CreateBigCurveSideWalk(Vector3.zero,(int)rotation, ref road);
         //TestCurves(Vector3.zero, (int)rotation, ref road);
-        SetMesh(road);
+        CombineMesh();
     }
     public void PlaceRoad()
     {
@@ -50,13 +61,12 @@ public class RoadBuilder : MonoBehaviour
         CreateStraightSideWalk(offset, rotation, true, ref road);
         CreateStraightSideWalk(offset, rotation, false, ref road);
 
-        CreateQuad(road,
-            new Vector3(-fullWidth, 0, halfQuadSize) + innerHeightOffset,
-            new Vector3(-fullWidth, 0, -halfQuadSize) + innerHeightOffset,
-            new Vector3(fullWidth, 0, halfQuadSize) + innerHeightOffset,
-            new Vector3(fullWidth, 0, -halfQuadSize) + innerHeightOffset,
-            rotation,
-                roadSettings.roadColor);
+        CreateQuad(ref road,
+            new Vector3(-sideWidth, 0, halfQuadSize).RotateVector(rotation) + innerHeightOffset,
+            new Vector3(-sideWidth, 0, -halfQuadSize).RotateVector(rotation) + innerHeightOffset,
+            new Vector3(sideWidth, 0, halfQuadSize).RotateVector(rotation) + innerHeightOffset,
+            new Vector3(sideWidth, 0, -halfQuadSize).RotateVector(rotation) + innerHeightOffset,
+            roadSettings.roadColor);
     }
 
     void CreateStraightSideWalk(Vector3 offset, int rotation, bool isRight, ref RoadSection road)
@@ -69,33 +79,30 @@ public class RoadBuilder : MonoBehaviour
         int rotate = rotation;
         if (!isRight)
         {
-            rotate = (rotation + 2)%4;
+            rotate.GetOppositeRotation();
         }
 
-        CreateQuad(road,
-            new Vector3(fullWidth, 0, halfQuadSize) + outerHeightOffset,
-            new Vector3(fullWidth, 0, -halfQuadSize) + outerHeightOffset,
-            new Vector3(fullWidth, 0, halfQuadSize) + offset,
-            new Vector3(fullWidth, 0, -halfQuadSize) + offset,
-            rotate,
-                roadSettings.sideWalkColor);
+        CreateQuad(ref road,
+            new Vector3(fullWidth, 0, halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            new Vector3(fullWidth, 0, -halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            new Vector3(fullWidth, 0, halfQuadSize).RotateVector(rotate) + offset,
+            new Vector3(fullWidth, 0, -halfQuadSize).RotateVector(rotate) + offset,
+            roadSettings.sideWalkColor);
 
-        CreateQuad(road,
-            new Vector3(sideWidth, 0, halfQuadSize) + outerHeightOffset,
-            new Vector3(sideWidth, 0, -halfQuadSize) + outerHeightOffset,
-            new Vector3(fullWidth, 0, halfQuadSize) + outerHeightOffset,
-            new Vector3(fullWidth, 0, -halfQuadSize) + outerHeightOffset,
-            rotate,
-                roadSettings.sideWalkColor);
+        CreateQuad(ref road,
+            new Vector3(sideWidth, 0, halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            new Vector3(sideWidth, 0, -halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            new Vector3(fullWidth, 0, halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            new Vector3(fullWidth, 0, -halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            roadSettings.sideWalkColor);
 
 
-        CreateQuad(road,
-            new Vector3(sideWidth, 0, halfQuadSize) + innerHeightOffset,
-            new Vector3(sideWidth, 0, -halfQuadSize) + innerHeightOffset,
-            new Vector3(sideWidth, 0, halfQuadSize) + outerHeightOffset,
-            new Vector3(sideWidth, 0, -halfQuadSize) + outerHeightOffset,
-            rotate,
-                roadSettings.sideWalkColor);
+        CreateQuad(ref road,
+            new Vector3(sideWidth, 0, halfQuadSize).RotateVector(rotate) + innerHeightOffset,
+            new Vector3(sideWidth, 0, -halfQuadSize).RotateVector(rotate) + innerHeightOffset,
+            new Vector3(sideWidth, 0, halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            new Vector3(sideWidth, 0, -halfQuadSize).RotateVector(rotate) + outerHeightOffset,
+            roadSettings.sideWalkColor);
 
     }
 
@@ -111,29 +118,27 @@ public class RoadBuilder : MonoBehaviour
         for(int i = 0; i < roadSettings.bigCurvePolyCount; i++)
         {
             //outer wall
-            CreateQuad(road, 
+            CreateQuad(ref road, 
                 outerCurve[i] + offset, 
                 outerCurve[i + 1] + offset, 
                 outerCurve[i] + outerHeightOffset, 
                 outerCurve[i + 1] + outerHeightOffset,
                 roadSettings.sideWalkColor);
             //floor
-            CreateQuad(road, 
+            CreateQuad(ref road, 
                 outerCurve[i] + outerHeightOffset, 
                 outerCurve[i + 1] + outerHeightOffset, 
                 innerCurve[i] + outerHeightOffset, 
                 innerCurve[i + 1] + outerHeightOffset,
                 roadSettings.sideWalkColor);
             //inner wall
-            CreateQuad(road, 
+            CreateQuad(ref road, 
                 innerCurve[i] + outerHeightOffset, 
                 innerCurve[i + 1] + outerHeightOffset, 
                 innerCurve[i] + innerHeightOffset, 
                 innerCurve[i + 1] + innerHeightOffset,
                 roadSettings.sideWalkColor);
         }
-        //return road;
-        //SetMesh(road);
     }
 
 
@@ -151,44 +156,32 @@ public class RoadBuilder : MonoBehaviour
         for (int i = 0; i < roadSettings.smallCurvePolyCount; i++)
         {
             //outer wall
-            CreateQuad(road, 
+            CreateQuad(ref road, 
                 outerCurve[i]+ outerHeightOffset,
                 outerCurve[i + 1] + outerHeightOffset, 
                 outerCurve[i] + offset, 
                 outerCurve[i + 1] + offset,
                 roadSettings.sideWalkColor);
             //floor
-            CreateQuad(road, 
+            CreateQuad(ref road, 
                 innerCurve[i] + outerHeightOffset, 
                 innerCurve[i + 1] + outerHeightOffset, 
                 outerCurve[i] + outerHeightOffset, 
                 outerCurve[i + 1] + outerHeightOffset,
                 roadSettings.sideWalkColor);
             //inner wall
-            CreateQuad(road, 
+            CreateQuad(ref road, 
                 innerCurve[i] + innerHeightOffset, 
                 innerCurve[i + 1] + innerHeightOffset, 
                 innerCurve[i] + outerHeightOffset, 
                 innerCurve[i + 1] + outerHeightOffset,
                 roadSettings.sideWalkColor);
         }
-        //return road;
-        //SetMesh(road);
-    }
-    void CreateQuad(RoadSection road, Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, int rotation, Color color)
-    {
-        CreateQuad(road,
-            Quaternion.AngleAxis(Util.rotationAngle[rotation], Vector3.up) * a1,
-            Quaternion.AngleAxis(Util.rotationAngle[rotation], Vector3.up) * a2,
-            Quaternion.AngleAxis(Util.rotationAngle[rotation], Vector3.up) * b1,
-            Quaternion.AngleAxis(Util.rotationAngle[rotation], Vector3.up) * b2,
-            color);
-
     }
 
-    void CreateQuad(RoadSection road, Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, Color color)
+    void CreateQuad(ref RoadSection road, Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, Color color)
     {
-        int offsetVertices = road.vertices.Count;
+        int offset = road.vertices.Count;
         road.vertices.Add(a1);
         road.vertices.Add(a2);
         road.vertices.Add(b1);
@@ -199,29 +192,40 @@ public class RoadBuilder : MonoBehaviour
         road.colors.Add(color);
         road.colors.Add(color);
 
-        road.triangles.Add(offsetVertices + 0);
-        road.triangles.Add(offsetVertices + 2);
-        road.triangles.Add(offsetVertices + 1);
+        road.triangles.Add(offset + 0);
+        road.triangles.Add(offset + 2);
+        road.triangles.Add(offset + 1);
 
-        road.triangles.Add(offsetVertices + 1);
-        road.triangles.Add(offsetVertices + 2);
-        road.triangles.Add(offsetVertices + 3);
+        road.triangles.Add(offset + 1);
+        road.triangles.Add(offset + 2);
+        road.triangles.Add(offset + 3);
 
         
     }
 
-    void SetMesh(RoadSection road)
+    void CombineMesh()
     {
-        mesh.SetVertices(road.vertices.ToArray());
-        mesh.SetTriangles(road.triangles.ToArray(), 0);
-        mesh.SetColors(road.colors);
-        mesh.RecalculateNormals();
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+        List<Color> colors = new List<Color>();
+
+
+        for(int i = 0; i < sections.Count; i++)
+        {
+            int trianglesOffset = vertices.Count;
+            vertices.AddRange(sections[i].vertices);
+            triangles.AddRange(sections[i].GetTriangles(trianglesOffset));
+            colors.AddRange(sections[i].colors);
+        }
+        SetMesh(vertices, triangles, colors);
     }
 
-    void CreateBigCircle(Vector3 offset)
+    void SetMesh(List<Vector3> vertices, List<int> triangles, List<Color> colors)
     {
-        RoadSection road = new RoadSection();
-
+        mesh.SetVertices(vertices.ToArray());
+        mesh.SetTriangles(triangles.ToArray(), 0);
+        mesh.SetColors(colors);
+        mesh.RecalculateNormals();
     }
 
     void CreateFullRoad(Vector3 offset)
@@ -280,13 +284,13 @@ public class RoadSection
         colors = new List<Color>();
     }
 
-    public List<int> GetTriangles(int offset)
+    public int[] GetTriangles(int offset)
     {
-        List<int> result = new List<int>();
+        int[] result = new int[triangles.Count];
 
         for(int i = 0; i < triangles.Count; i++)
         {
-            result.Add(triangles[i] + offset);
+            result[i]=triangles[i] + offset;
         }
 
         return result;

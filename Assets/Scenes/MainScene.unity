@@ -315,7 +315,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRight: 1
-  rotation: 1
+  rotation: 0
   quadSize: 1
   roadSettings: {fileID: 11400000, guid: d936aabfef12df44cb87c65cc5a2d39c, type: 2}
   meshFilter: {fileID: 434104670}

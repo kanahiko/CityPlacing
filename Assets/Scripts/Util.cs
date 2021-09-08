@@ -13,6 +13,17 @@ public static class Util
     {
         0,90,180,270
     };
+
+    public static void GetOppositeRotation(this int rotation)
+    {
+        rotation = (rotation + 2) % 4;
+    }
+
+    public static Vector3 RotateVector(this Vector3 point, int rotation)
+    {
+        return Quaternion.AngleAxis(Util.rotationAngle[rotation], Vector3.up) * point;
+    }
+
     public static List<Vector3> GetCirclePoint(int count, float radius, float quadSize, int rotation)
     {
         //Debug.Log(radius);
